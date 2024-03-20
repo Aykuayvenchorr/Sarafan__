@@ -21,6 +21,7 @@
 }
 
 Вставляем токен в Authorization и получаем доступ к вот этим вьюшкам
+
     path('users/<int:user_id>/add-product/<int:product_id>/<int:quantity>/', UserCartViewSet.as_view({'post': 'add_or_create_product_to_cart'})),
     path('users/<int:user_id>/remove-product/<int:product_id>/', UserCartViewSet.as_view({'delete': 'remove_product_from_cart'})),
     path('users/<int:user_id>/cart/', UserCartViewSet.as_view({'get': 'get_cart_contents'})),
