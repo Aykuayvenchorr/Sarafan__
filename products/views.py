@@ -13,65 +13,65 @@ from products.serializers import CategorySerializer, SubcategorySerializer, Prod
 
 
 class CategoryViewSet(ModelViewSet):
-    """Эндпоинт для просмотра всех категорий"""
+    """Р­РЅРґРїРѕРёРЅС‚ РґР»СЏ РїСЂРѕСЃРјРѕС‚СЂР° РІСЃРµС… РєР°С‚РµРіРѕСЂРёР№"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class SubcategoryViewSet(ModelViewSet):
-    """Эндпоинт для просмотра всех подкатегорий"""
+    """Р­РЅРґРїРѕРёРЅС‚ РґР»СЏ РїСЂРѕСЃРјРѕС‚СЂР° РІСЃРµС… РїРѕРґРєР°С‚РµРіРѕСЂРёР№"""
     queryset = Subcategory.objects.all()
     serializer_class = SubcategorySerializer
 
 
 class ProductViewSet(ModelViewSet):
-    """Эндпоинт для просмотра всех продуктов"""
+    """Р­РЅРґРїРѕРёРЅС‚ РґР»СЏ РїСЂРѕСЃРјРѕС‚СЂР° РІСЃРµС… РїСЂРѕРґСѓРєС‚РѕРІ"""
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
 
 class UserCartViewSet(ModelViewSet):
-    """Эндпоинт для работы с корзиной юзера"""
+    """Р­РЅРґРїРѕРёРЅС‚ РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РєРѕСЂР·РёРЅРѕР№ СЋР·РµСЂР°"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
     def add_or_create_product_to_cart(self, request, user_id, product_id, quantity):
-        """Метод добавления или изменений количества продуктов в корзине"""
+        """РњРµС‚РѕРґ РґРѕР±Р°РІР»РµРЅРёСЏ РёР»Рё РёР·РјРµРЅРµРЅРёР№ РєРѕР»РёС‡РµСЃС‚РІР° РїСЂРѕРґСѓРєС‚РѕРІ РІ РєРѕСЂР·РёРЅРµ"""
         user = User.objects.get(id=int(user_id))
         product = Product.objects.get(id=int(product_id))
-        # Проверяем, есть ли такой продукт уже в корзине пользователя
+        # РџСЂРѕРІРµСЂСЏРµРј, РµСЃС‚СЊ Р»Рё С‚Р°РєРѕР№ РїСЂРѕРґСѓРєС‚ СѓР¶Рµ РІ РєРѕСЂР·РёРЅРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ
         cart_item, created = CartItem.objects.get_or_create(user=user, product=product)
-        # Если продукт уже есть в корзине, изменяем его количество
+        # Р•СЃР»Рё РїСЂРѕРґСѓРєС‚ СѓР¶Рµ РµСЃС‚СЊ РІ РєРѕСЂР·РёРЅРµ, РёР·РјРµРЅСЏРµРј РµРіРѕ РєРѕР»РёС‡РµСЃС‚РІРѕ
         if not created:
             cart_item.quantity = int(quantity)
             cart_item.save()
         else:
-            # Если продукта еще нет в корзине, создаем новую запись
+            # Р•СЃР»Рё РїСЂРѕРґСѓРєС‚Р° РµС‰Рµ РЅРµС‚ РІ РєРѕСЂР·РёРЅРµ, СЃРѕР·РґР°РµРј РЅРѕРІСѓСЋ Р·Р°РїРёСЃСЊ
             CartItem.objects.create(user=user, product=product, quantity=quantity)
 
         serializer = self.get_serializer(user)
         return Response(serializer.data)
 
     def remove_product_from_cart(self, request, user_id, product_id):
-        """Метод удаления продукта из корзины"""
+        """РњРµС‚РѕРґ СѓРґР°Р»РµРЅРёСЏ РїСЂРѕРґСѓРєС‚Р° РёР· РєРѕСЂР·РёРЅС‹"""
         user = User.objects.get(id=int(user_id))
         product = Product.objects.get(id=int(product_id))
         cart_item = get_object_or_404(CartItem, user=user, product=product)
 
-        # Удаляем объект корзины
+        # РЈРґР°Р»СЏРµРј РѕР±СЉРµРєС‚ РєРѕСЂР·РёРЅС‹
         cart_item.delete()
         user.save()
         serializer = self.get_serializer(user)
         return Response(serializer.data)
 
     def get_cart_contents(self, request, user_id):
-        """Метод, который выводит содержимое корзины, цену и количество товаров"""
+        """РњРµС‚РѕРґ, РєРѕС‚РѕСЂС‹Р№ РІС‹РІРѕРґРёС‚ СЃРѕРґРµСЂР¶РёРјРѕРµ РєРѕСЂР·РёРЅС‹, С†РµРЅСѓ Рё РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂРѕРІ"""
         user = User.objects.get(id=int(user_id))
         cart_items = user.cartitem_set.all()
-        # Подсчитываем общее количество товаров в корзине
+        # РџРѕРґСЃС‡РёС‚С‹РІР°РµРј РѕР±С‰РµРµ РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂРѕРІ РІ РєРѕСЂР·РёРЅРµ
         total_quantity = cart_items.aggregate(total_quantity=Sum('quantity'))['total_quantity'] or 0
-        # Подсчитываем общую стоимость товаров в корзине
+        # РџРѕРґСЃС‡РёС‚С‹РІР°РµРј РѕР±С‰СѓСЋ СЃС‚РѕРёРјРѕСЃС‚СЊ С‚РѕРІР°СЂРѕРІ РІ РєРѕСЂР·РёРЅРµ
         total_price = cart_items.aggregate(total_price=Sum(F('product__price') * F('quantity')))['total_price'] or 0
 
         cart_serializer = CartItemSerializer(cart_items, many=True)
@@ -83,13 +83,13 @@ class UserCartViewSet(ModelViewSet):
         })
 
     def clear_cart(self, request, user_id):
-        """Метод, который очищает корзину полностью"""
+        """РњРµС‚РѕРґ, РєРѕС‚РѕСЂС‹Р№ РѕС‡РёС‰Р°РµС‚ РєРѕСЂР·РёРЅСѓ РїРѕР»РЅРѕСЃС‚СЊСЋ"""
         user = User.objects.get(id=int(user_id))
         user.cartitem_set.all().delete()
         return Response("Cart cleared successfully")
 
 
 class UserCreateView(CreateAPIView):
-    """Метод для создания пользователя"""
+    """РњРµС‚РѕРґ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ"""
     model = User
     serializer_class = UserCreateSerializer
