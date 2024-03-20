@@ -13,26 +13,31 @@ from products.serializers import CategorySerializer, SubcategorySerializer, Prod
 
 
 class CategoryViewSet(ModelViewSet):
+    """Ёндпоинт дл€ просмотра всех категорий"""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
 
 class SubcategoryViewSet(ModelViewSet):
+    """Ёндпоинт дл€ просмотра всех подкатегорий"""
     queryset = Subcategory.objects.all()
     serializer_class = SubcategorySerializer
 
 
 class ProductViewSet(ModelViewSet):
+    """Ёндпоинт дл€ просмотра всех продуктов"""
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 
 
 class UserCartViewSet(ModelViewSet):
+    """Ёндпоинт дл€ работы с корзиной юзера"""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
     def add_or_create_product_to_cart(self, request, user_id, product_id, quantity):
+        """ћетод добавлени€ или изменений количества продуктов в корзине"""
         user = User.objects.get(id=int(user_id))
         product = Product.objects.get(id=int(product_id))
         # ѕровер€ем, есть ли такой продукт уже в корзине пользовател€
@@ -49,6 +54,7 @@ class UserCartViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def remove_product_from_cart(self, request, user_id, product_id):
+        """ћетод удалени€ продукта из корзины"""
         user = User.objects.get(id=int(user_id))
         product = Product.objects.get(id=int(product_id))
         cart_item = get_object_or_404(CartItem, user=user, product=product)
@@ -60,6 +66,7 @@ class UserCartViewSet(ModelViewSet):
         return Response(serializer.data)
 
     def get_cart_contents(self, request, user_id):
+        """ћетод, который выводит содержимое корзины, цену и количество товаров"""
         user = User.objects.get(id=int(user_id))
         cart_items = user.cartitem_set.all()
         # ѕодсчитываем общее количество товаров в корзине
@@ -76,11 +83,13 @@ class UserCartViewSet(ModelViewSet):
         })
 
     def clear_cart(self, request, user_id):
+        """ћетод, который очищает корзину полностью"""
         user = User.objects.get(id=int(user_id))
         user.cartitem_set.all().delete()
         return Response("Cart cleared successfully")
 
 
 class UserCreateView(CreateAPIView):
+    """ћетод дл€ создани€ пользовател€"""
     model = User
     serializer_class = UserCreateSerializer
